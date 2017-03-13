@@ -112,12 +112,12 @@
           if (!$ctrl.date) {
             $ctrl.date = $ctrl.dates[0];
           } else {
-            var target = dateToInt($ctrl.date);
+            var target = dateToIntRelative($ctrl.date);
             var minDiff;
             var bestMatch;
 
             $ctrl.dates.forEach(function (date) {
-              var diff = Math.abs(dateToInt(date) - target);
+              var diff = Math.abs(dateToIntRelative(date) - target);
               if (minDiff === undefined || diff < minDiff) {
                 minDiff = diff;
                 bestMatch = date;
@@ -227,10 +227,31 @@
 
   var millisPerDay = 60 * 60 * 24 * 1000;
 
-  function dateToInt(date) {
-    return new Date(date).getTime() / millisPerDay;
+  /**
+   * The number of days since the UNIX epoch for the given date string (e.g. '2016-06-29').
+   */
+  function dateToInt(dateString) {
+    return new Date(dateString).getTime() / millisPerDay;
   }
 
+  /**
+   * The number of days since the last August 1st for the given date string (e.g. '2016-06-29').
+   */
+  function dateToIntRelative(dateString) {
+    var date = new Date(dateString);
+
+    var targetYear = date.getYear();
+    if (date.getMonth() < 7) {
+      targetYear = date.getYear() - 1;
+    }
+    var lastAugust = new Date(targetYear, 7, 1);
+
+    return (date.getTime() - lastAugust) / millisPerDay;
+  }
+
+  /**
+   * Produces the date string (e.g. '2016-06-29') for the given number of days since the UNIX epoch.
+   */
   function intToDate(int) {
     var date = new Date(int * millisPerDay);
     var d = date.getDate();
