@@ -1,0 +1,10 @@
+<div class="singleView">
+  <select ng-model="$ctrl.year" ng-options="year for year in $ctrl.years"></select>
+  <select ng-model="$ctrl.type" ng-options="type.key as type.title for type in $ctrl.types"></select>
+  <div ng-if="$ctrl.dates.length == 0">No data available for {{$ctrl.year}}.</div>
+  <div ng-if="$ctrl.dates.length > 0">
+    <slider dates="$ctrl.dates" selected-date="$ctrl.date" on-update="$ctrl.updateDate(date)" ng-if="$ctrl.dates.length > 1"></slider>
+    <div ng-if="$ctrl.dates.length == 1">Only one image available for {{$ctrl.year}}.</div>
+    <div class="imageContainer" ng-if="$ctrl.image"><img ng-src="{{$ctrl.image}}" alt="Image" /></div>
+  </div>
+</div>
