@@ -1,50 +1,65 @@
 (function() {
   "use strict";
 
-  angular.module('slf', [])
-    .constant('types', [
-      {
-        'key': 'depth',
-        'title': 'Snow depth'
-      },
-      {
-        'key': 'at2000m',
-        'title': 'Snow depth at 2000m/2500m'
-      },
-      {
-        'key': 'relative',
-        'title': 'Snow depth percentage of long-term mean values'
-      },
-      {
-        'key': '1day',
-        'title': 'Fresh snow 1 day'
-      },
-      {
-        'key': '3days',
-        'title': 'New snow 3 days'
+  var app = angular.module('slf', []);
+
+  app.constant('types', [
+    {
+      'key': 'depth',
+      'title': 'Snow depth'
+    },
+    {
+      'key': 'at2000m',
+      'title': 'Snow depth at 2000m/2500m'
+    },
+    {
+      'key': 'relative',
+      'title': 'Snow depth percentage of long-term mean values'
+    },
+    {
+      'key': '1day',
+      'title': 'Fresh snow 1 day'
+    },
+    {
+      'key': '3days',
+      'title': 'New snow 3 days'
+    }
+  ]);
+
+  app.component('global', {
+    templateUrl: 'global.html',
+    controller: GlobalController
+  });
+
+  app.component('singleView', {
+    bindings: {
+      images: '<',
+      years: '<'
+    },
+    templateUrl: 'singleView.html',
+    controller: SingleViewController
+  });
+
+  app.component('slider', {
+    bindings: {
+      dates: '<',
+      selectedDate: '<',
+      onUpdate: '&'
+    },
+    template: '<div class="slider"></div>',
+    controller: SliderController
+  });
+
+  app.directive('imageonload', function() {
+    return {
+      restrict: 'A',
+      link: function(scope, element, attrs) {
+        element.bind('load', function() {
+          scope.$apply(attrs.imageonload);
+        });
       }
-    ])
-    .constant('years', [2016, 2017])
-    .component('global', {
-      templateUrl: 'global.html',
-      controller: GlobalController
-    })
-    .component('singleView', {
-      bindings: {
-        images: '<'
-      },
-      templateUrl: 'singleView.html',
-      controller: SingleViewController
-    })
-    .component('slider', {
-      bindings: {
-        dates: '<',
-        selectedDate: '<',
-        onUpdate: '&'
-      },
-      template: '<div class="slider"></div>',
-      controller: SliderController
-    });
+    };
+  });
 
   GlobalController.$inject = ["$http"];
   function GlobalController($http) {
@@ -53,20 +68,25 @@
     $http.get("https://s3.eu-central-1.amazonaws.com/slf.stijnvermeeren.be/data.json").then(
       function(response) {
         $ctrl.images = response.data;
+        $ctrl.years = Object.keys($ctrl.images).map(function(yearString) { return +yearString; });
       }
     );
   }
 
-  SingleViewController.$inject = ['$scope', 'years', 'types'];
-  function SingleViewController($scope, years, types) {
+  SingleViewController.$inject = ['$scope', 'types'];
+  function SingleViewController($scope, types) {
     var $ctrl = this;
 
-    $ctrl.years = years;
     $ctrl.types = types;
     $ctrl.year = 2017;
     $ctrl.type = '1day';
+    $ctrl.isLoading = true;
 
     $ctrl.dates = [];
+
+    $ctrl.imageLoaded = function() {
+      $ctrl.isLoading = false;
+    };
 
     $ctrl.updateDate = function(newDate) {
       $ctrl.date = newDate;
@@ -126,6 +146,7 @@
         console.log("Image", $ctrl.year, $ctrl.type, $ctrl.date);
 
         $ctrl.image = newImage;
+        $ctrl.isLoading = true;
       }
     };
 

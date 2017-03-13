@@ -5,6 +5,15 @@
   <div ng-if="$ctrl.dates.length > 0">
     <slider dates="$ctrl.dates" selected-date="$ctrl.date" on-update="$ctrl.updateDate(date)" ng-if="$ctrl.dates.length > 1"></slider>
     <div ng-if="$ctrl.dates.length == 1">Only one image available for {{$ctrl.year}}.</div>
-    <div class="imageContainer" ng-if="$ctrl.image"><img ng-src="{{$ctrl.image}}" alt="Image" /></div>
+    <div class="imageContainer" ng-if="$ctrl.image">
+      <div class="spinnerContainer" ng-if="$ctrl.isLoading">
+        <div class="spinner">
+          <div class="bounce1"></div>
+          <div class="bounce2"></div>
+          <div class="bounce3"></div>
+        </div>
+      </div>
+      <img ng-src="{{$ctrl.image}}" alt="Image" imageonload="$ctrl.imageLoaded()" />
+    </div>
   </div>
 </div>
