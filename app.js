@@ -68,7 +68,9 @@
     $http.get("https://s3.eu-central-1.amazonaws.com/slf.stijnvermeeren.be/data.json").then(
       function(response) {
         $ctrl.images = response.data;
-        $ctrl.years = Object.keys($ctrl.images).map(function(yearString) { return +yearString; });
+        $ctrl.years = Object.keys($ctrl.images)
+          .map(function(yearString) { return +yearString; })
+          .sort(function(a, b) { return b - a; }); // sort descending
       }
     );
   }
