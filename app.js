@@ -69,8 +69,9 @@
       function(response) {
         $ctrl.images = response.data;
         $ctrl.years = Object.keys($ctrl.images)
-          .map(function(yearString) { return +yearString; })
-          .sort(function(a, b) { return b - a; }); // sort descending
+          .map(Number)
+          .sort()
+          .reverse(); // sort descending
       }
     );
   }
@@ -101,7 +102,7 @@
          */
         if ($ctrl.images[$ctrl.year] && $ctrl.images[$ctrl.year][$ctrl.type]) {
           $ctrl.dates = $ctrl.images[$ctrl.year][$ctrl.type].map(function (item) {
-            return item.split(".")[0];
+            return item.split(".")[0]; //remove the file extension from the date-named image
           });
         } else {
           $ctrl.dates = [];
@@ -140,9 +141,14 @@
         if ($ctrl.images[$ctrl.year] && $ctrl.images[$ctrl.year][$ctrl.type]) {
           $ctrl.images[$ctrl.year][$ctrl.type].forEach(function(item) {
             if (item.split(".")[0] == $ctrl.date) {
-              newImage = "https://s3.eu-central-1.amazonaws.com/slf.stijnvermeeren.be/" + $ctrl.year + "/" + $ctrl.type + "/" + item;
+              newImage = [
+              	"https://s3.eu-central-1.amazonaws.com/slf.stijnvermeeren.be",
+              	$ctrl.year,
+              	$ctrl.type,
+              	item
+              ].join("/");
             }
-          })
+          });
         }
 
         console.log("Image", $ctrl.year, $ctrl.type, $ctrl.date);
@@ -200,12 +206,8 @@
           }
         },
         format: {
-          to: function(value) {
-            return intToDate(value);
-          },
-          from: function(value) {
-            return dateToInt(value);
-          }
+          to: intToDate,
+          from: dateToInt
         }
       });
 
@@ -213,7 +215,7 @@
         // don't use $scope.$apply because of https://docs.angularjs.org/error/$rootScope/inprog?p0=$digest
         $timeout(function() {
           $ctrl.onUpdate({ date: values[0] })
-        }, 0);
+        });
       });
 
       return slider;
@@ -233,33 +235,25 @@
    * The number of days since the UNIX epoch for the given date string (e.g. '2016-06-29').
    */
   function dateToInt(dateString) {
-    return new Date(dateString).getTime() / millisPerDay;
+    var milliseconds = moment(dateString).valueOf();
+    return moment.duration(milliseconds).asDays();
   }
 
   /**
    * The number of days since the last August 1st for the given date string (e.g. '2016-06-29').
    */
   function dateToIntRelative(dateString) {
-    var date = new Date(dateString);
-
-    var targetYear = date.getYear();
-    if (date.getMonth() < 7) {
-      targetYear = date.getYear() - 1;
-    }
-    var lastAugust = new Date(targetYear, 7, 1);
-
-    return (date.getTime() - lastAugust) / millisPerDay;
+  	var givenDate = moment(dateString);
+    var august1st = givenDate.clone().startOf("year").add(7, "months");
+    august1st.subtract(august1st.isAfter(givenDate.clone()) ? 1 : 0, "years");
+    return givenDate.clone().diff(august1st, "days");
   }
 
   /**
    * Produces the date string (e.g. '2016-06-29') for the given number of days since the UNIX epoch.
    */
   function intToDate(int) {
-    var date = new Date(int * millisPerDay);
-    var d = date.getDate();
-    var m = date.getMonth() + 1;
-    var y = date.getFullYear();
-    return '' + y + '-' + (m<=9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d);
+    return moment(0).add(int, "days").format("YYYY-MM-DD");
   }
 
 })();
