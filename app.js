@@ -142,10 +142,10 @@
           $ctrl.images[$ctrl.year][$ctrl.type].forEach(function(item) {
             if (item.split(".")[0] == $ctrl.date) {
               newImage = [
-              	"https://s3.eu-central-1.amazonaws.com/slf.stijnvermeeren.be",
-              	$ctrl.year,
-              	$ctrl.type,
-              	item
+                "https://s3.eu-central-1.amazonaws.com/slf.stijnvermeeren.be",
+                $ctrl.year,
+                $ctrl.type,
+                item
               ].join("/");
             }
           });
@@ -229,8 +229,6 @@
     });
   }
 
-  var millisPerDay = 60 * 60 * 24 * 1000;
-
   /**
    * The number of days since the UNIX epoch for the given date string (e.g. '2016-06-29').
    */
@@ -243,10 +241,10 @@
    * The number of days since the last August 1st for the given date string (e.g. '2016-06-29').
    */
   function dateToIntRelative(dateString) {
-  	var givenDate = moment(dateString);
+    var givenDate = moment(dateString);
     var august1st = givenDate.clone().startOf("year").add(7, "months");
-    august1st.subtract(august1st.isAfter(givenDate.clone()) ? 1 : 0, "years");
-    return givenDate.clone().diff(august1st, "days");
+    august1st.subtract(august1st.isAfter(givenDate) ? 1 : 0, "years");
+    return givenDate.diff(august1st, "days");
   }
 
   /**
